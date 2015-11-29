@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+
+require "socket"
+require_relative "../lib/dns_query"
+
+domain_name, dns_server, record_type = ARGV
+
+socket = UDPSocket.new
+socket.connect(dns_server, 53)
+
+query = DNSQuery.new(123)
+query.add_question(domain_name)
+#TODO use record type
+
+p query.build
+
+socket.send(query.build, 0)
+
+p socket.recvfrom(1)
