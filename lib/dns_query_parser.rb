@@ -1,3 +1,5 @@
+require "ipaddr"
+
 class DNSQueryParser
   attr_reader :data
 
@@ -51,8 +53,8 @@ class DNSQueryParser
 
   def parse_response_data(type, data)
     case type
-    when "A"
-      data.unpack("CCCC").join(".")
+    when "A", "AAAA"
+      IPAddr.new_ntoh(data)
     when "NS"
       parse_domain_name(offset: 0, data: data, update_offset: false)
     when "MX"

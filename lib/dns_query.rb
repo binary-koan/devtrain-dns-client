@@ -3,7 +3,8 @@ class DNSQuery
     "A" => 0x01,
     "NS" => 0x02,
     "MX" => 0x0f,
-    "TXT" => 0x10
+    "TXT" => 0x10,
+    "AAAA" => 0x1c
   }
 
   QUERY_RECURSIVE = 0x0100
