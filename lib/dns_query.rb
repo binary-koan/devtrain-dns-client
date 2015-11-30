@@ -2,13 +2,8 @@ class DNSQuery
   RECORD_TYPE = {
     "A" => 0x01,
     "NS" => 0x02,
-    "CNAME" => 0x05,
-    "PTR" => 0x0c,
     "MX" => 0x0f,
-    "SRV" => 0x21,
-    "IXFR" => 0xfb,
-    "AXFR" => 0xfc,
-    "ALL" => 0xff
+    "TXT" => 0x10
   }
 
   QUERY_RECURSIVE = 0x0100
@@ -31,12 +26,7 @@ class DNSQuery
   private
 
   def build_header
-    [
-      @id,
-      QUERY_RECURSIVE, # query recursively
-      @questions.size,
-      0, 0, 0 # no other records
-    ].pack("n6")
+    [@id, QUERY_RECURSIVE, @questions.size, 0, 0, 0].pack("n6")
   end
 
   def build_question(question)

@@ -45,18 +45,9 @@ class DNSQueryParser
   end
 
   def parse_domain_name(offset: @offset)
-    if (data[offset].ord & 0xc0) == 0xc0
-      domain_name_offset = data[offset, 2].unpack("n")[0] ^ 0xc000
-
-      new_offset = offset + 2
-      name, _ = parse_domain_name(offset: domain_name_offset)
-      @offset = new_offset
-
-      return name
-    end
+    return parse_compressed_domain_name(offset) if compressed_domain_name?(offset)
 
     parts = []
-
     while true
       next_length = data[offset].ord
       offset += 1
@@ -68,6 +59,19 @@ class DNSQueryParser
 
     @offset = offset
     parts.join(".")
+  end
+
+  def compressed_domain_name?(offset)
+    (data[offset].ord & 0xc0) == 0xc0
+  end
+
+  def parse_compressed_domain_name(offset)
+    domain_name_offset = data[offset, 2].unpack("n")[0] ^ 0xc000
+
+    name, _ = parse_domain_name(offset: domain_name_offset)
+    @offset = offset + 2
+
+    name
   end
 
   def read(bytes)
