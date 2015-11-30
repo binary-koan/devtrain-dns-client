@@ -1,11 +1,14 @@
 class DNSQuery
-  def initialize(id)
-    @id = id
-    @questions = []
+  def self.from_data(data)
+    DNSQuery.new.tap { |query| query.parse(data) }
   end
 
-  def add_question(domain_name)
-    @questions << domain_name
+  attr_accessor :id, :type
+  attr_accessor :questions, :answers
+
+  def initialize(id=0)
+    @id = id
+    @questions = []
   end
 
   def build

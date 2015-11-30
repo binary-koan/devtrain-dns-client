@@ -5,14 +5,12 @@ require_relative "../lib/dns_query"
 
 # domain_name, dns_server, record_type = ARGV
 
-query = DNSQuery.new(123)
-query.add_question("powershop.co.nz")
+query = DNSQuery.new(3)
+query.questions << "powershop.co.nz"
 
 socket = UDPSocket.new
 socket.connect("205.251.197.243", 53)
 socket.send(query.build, 0)
 
-puts query.build
-p query.build
-
-p socket.recvfrom(1000)
+data = socket.recvfrom(512) # UDP DNS requests are limited to 512 bytes
+p data
