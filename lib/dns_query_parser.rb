@@ -14,7 +14,7 @@ class DNSQueryParser
     answer_count = read_short
 
     # skip the rest of the header
-    @offset = 12
+    read(4)
 
     parse_questions(data, question_count)
     parse_answers(data, answer_count)
@@ -53,10 +53,15 @@ class DNSQueryParser
     case type
     when "A"
       data.unpack("CCCC").join(".")
+    when "NS"
+      parse_domain_name(offset: 0, data: data, update_offset: false)
     when "MX"
       priority = peek_short(data: data, offset: 0)
       domain = parse_domain_name(offset: 2, data: data, update_offset: false)
       "#{priority} #{domain}"
+    when "TXT"
+      length = data[0].ord
+      data[1, length]
     else
       data
     end
