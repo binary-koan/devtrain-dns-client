@@ -36,15 +36,32 @@ class DNSQueryParser
   def parse_answers(data, count)
     @result.answers = count.times.map do
       domain_name = parse_domain_name
-      read(8)
-      rdlength = read_short
-      rdata = data[@offset, rdlength]
+      type = DNSQuery::RECORD_TYPE.key(read_short)
 
-      { domain_name: domain_name, address: rdata.unpack("CCCC").join(".") }
+      # Skip the rest of the answer header
+      read(6)
+
+      rdlength = read_short
+      rdata = parse_response_data(type, read(rdlength))
+
+      { domain_name: domain_name, response: rdata }
     end
   end
 
-  def parse_domain_name(offset: @offset)
+  def parse_response_data(type, data)
+    case type
+    when "A"
+      data.unpack("CCCC").join(".")
+    when "MX"
+      number = peek_short(data: data, offset: 0) #TODO what is this?
+      domain = parse_domain_name(offset: 2, data: data, update_offset: false)
+      "#{number} #{domain}"
+    else
+      data
+    end
+  end
+
+  def parse_domain_name(offset: @offset, data: @data, update_offset: true)
     return parse_compressed_domain_name(offset) if compressed_domain_name?(offset)
 
     parts = []
@@ -57,7 +74,7 @@ class DNSQueryParser
       offset += next_length
     end
 
-    @offset = offset
+    @offset = offset if update_offset
     parts.join(".")
   end
 
@@ -66,12 +83,20 @@ class DNSQueryParser
   end
 
   def parse_compressed_domain_name(offset)
-    domain_name_offset = data[offset, 2].unpack("n")[0] ^ 0xc000
+    domain_name_offset = peek_short(offset: offset) ^ 0xc000
 
     name, _ = parse_domain_name(offset: domain_name_offset)
     @offset = offset + 2
 
     name
+  end
+
+  def peek(bytes, data: @data, offset: @offset)
+    data[offset, bytes]
+  end
+
+  def peek_short(data: @data, offset: @offset)
+    peek(2, data: data, offset: offset).unpack("n")[0]
   end
 
   def read(bytes)

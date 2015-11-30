@@ -61,7 +61,7 @@ describe DNSQuery do
     end
 
     it "parses answers" do
-      expect(query.answers).to contain_exactly({:domain_name=>"powershop.co.nz", :address=>"203.171.34.211"})
+      expect(query.answers).to contain_exactly({ :domain_name => "powershop.co.nz", :response => "203.171.34.211" })
     end
   end
 end

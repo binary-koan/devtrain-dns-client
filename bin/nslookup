@@ -7,4 +7,4 @@ result = SocketLookup.lookup(name_server: name_server, domain_name: domain_name,
 
 puts "You asked for: #{result.questions.first}"
 puts "Results:"
-puts result.answers.map { |answer| "#{answer[:domain_name]} => #{answer[:address]}" }
+puts result.answers.map { |answer| "#{answer[:domain_name]} => #{answer[:response]}" }
