@@ -17,7 +17,7 @@ class DNSQueryParser
     @offset = 12
 
     parse_questions(data, question_count)
-    parse_answers(data, question_count)
+    parse_answers(data, answer_count)
 
     @result
   end
@@ -27,9 +27,10 @@ class DNSQueryParser
   def parse_questions(data, count)
     @result.questions = count.times.map do
       domain_name = parse_domain_name
-      @offset += 4
+      type = DNSQuery::RECORD_TYPE.key(read_short)
+      @offset += 2 # skip class
 
-      domain_name
+      { domain: domain_name, type: type }
     end
   end
 
@@ -44,7 +45,7 @@ class DNSQueryParser
       rdlength = read_short
       rdata = parse_response_data(type, read(rdlength))
 
-      { domain_name: domain_name, response: rdata }
+      { domain: domain_name, type: type, response: rdata }
     end
   end
 
@@ -53,9 +54,9 @@ class DNSQueryParser
     when "A"
       data.unpack("CCCC").join(".")
     when "MX"
-      number = peek_short(data: data, offset: 0) #TODO what is this?
+      priority = peek_short(data: data, offset: 0)
       domain = parse_domain_name(offset: 2, data: data, update_offset: false)
-      "#{number} #{domain}"
+      "#{priority} #{domain}"
     else
       data
     end
