@@ -13,7 +13,9 @@ class DNSQueryParser
     question_count = read_short
     answer_count = read_short
 
+    # skip the rest of the header
     @offset = 12
+
     parse_questions(data, question_count)
     parse_answers(data, question_count)
 
@@ -36,9 +38,9 @@ class DNSQueryParser
       domain_name = parse_domain_name
       read(8)
       rdlength = read_short
-      rdata = data[@offset, rdlength].unpack("CCCC")
+      rdata = data[@offset, rdlength]
 
-      { domain_name: domain_name, address: rdata }
+      { domain_name: domain_name, address: rdata.unpack("CCCC").join(".") }
     end
   end
 
