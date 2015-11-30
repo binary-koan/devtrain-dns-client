@@ -63,11 +63,16 @@ class DNSQueryParser
   end
 
   def parse_domain_name(offset: @offset, data: @data, update_offset: true)
-    return parse_compressed_domain_name(offset) if compressed_domain_name?(offset)
-
     parts = []
-    while true
+    loop do
+      if compressed_domain_name?(data, offset)
+        parts << parse_compressed_domain_name(peek_short(data: data, offset: offset) ^ 0xc000)
+        offset += 2
+        break
+      end
+
       next_length = data[offset].ord
+
       offset += 1
       break if next_length == 0
 
@@ -79,17 +84,12 @@ class DNSQueryParser
     parts.join(".")
   end
 
-  def compressed_domain_name?(offset)
+  def compressed_domain_name?(data, offset)
     (data[offset].ord & 0xc0) == 0xc0
   end
 
-  def parse_compressed_domain_name(offset)
-    domain_name_offset = peek_short(offset: offset) ^ 0xc000
-
-    name, _ = parse_domain_name(offset: domain_name_offset)
-    @offset = offset + 2
-
-    name
+  def parse_compressed_domain_name(absolute_offset)
+    parse_domain_name(offset: absolute_offset, update_offset: false)
   end
 
   def peek(bytes, data: @data, offset: @offset)
