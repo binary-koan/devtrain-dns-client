@@ -10,7 +10,7 @@ describe DNSQuery do
 
   describe "#questions" do
     let(:query) { DNSQuery.new(234) }
-    before { query.questions << "google.com" }
+    before { query.questions.push(domain: "google.com") }
 
     it "adds a body to the message" do
       expect(query.build.length).to eq 28
@@ -27,7 +27,7 @@ describe DNSQuery do
 
   describe "#build" do
     let(:query) { DNSQuery.new(query_id) }
-    before { query.questions << domain_name }
+    before { query.questions.push(domain: domain_name) }
 
     context "with a query for google.com" do
       let(:query_id) { 3 }
@@ -61,7 +61,7 @@ describe DNSQuery do
     end
 
     it "parses answers" do
-      expect(query.answers).to contain_exactly("google.com")
+      expect(query.answers).to contain_exactly({:domain_name=>"powershop.co.nz", :address=>"203.171.34.211"})
     end
   end
 end

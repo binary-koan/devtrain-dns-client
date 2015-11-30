@@ -7,7 +7,7 @@ module SocketLookup
 
   def lookup(name_server:, domain_name:, record_type:)
     query = DNSQuery.new(3)
-    query.questions << domain_name
+    query.questions.push(domain: domain_name, type: record_type)
 
     data, _ = udp_lookup(ip: name_server, port: 53, query: query)
 
